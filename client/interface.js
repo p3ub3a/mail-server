@@ -28,9 +28,17 @@ var options = {
 start();
 var socket = new net.Socket();
 socket.connect(options);
+var isLoggedIn = false;
 
 async function start(){
-    var input = await getUserInput(0, 1);
+    var input;
+    if(isLoggedIn){
+        input = await getUserInput(1, 6);
+    }else{
+        input = await getUserInput(0, 1);
+        console.log("ajungerwqhrq");
+    }
+    
     var msg = "";
 
     switch(input){
@@ -42,10 +50,13 @@ async function start(){
             break;
         // login username password
         case "1":
-            console.log(input);
+            var credentials = await getCredentials(createAccountQuestion);
+            console.log(credentials);
+            sendMsg(socket, LOGIN_MSG + " " + credentials + "\n");
             break;
         // logout
         case "2":
+            isLoggedIn = false;
             console.log(input);
             break;
         // send users msg
@@ -73,23 +84,28 @@ async function start(){
 
 function getUserInput(min, max){
     return new Promise((resolve, reject) => {
-        var question = actionQuestion;
-        for(i=min; i<= max; i++){
-            question+= "\n" + i + ")" + actions[i];
-        }
-        question += "\n";
-        
-        rl.question( question, (action) => {
-            if(action >= min && action <= max){
-                return resolve(action);
-            }else{
-                return reject("Please choose an action ranged " + min + " - " + max + "\n");
-            }
-        });
+        askQuestion(resolve);
     }).catch(err => {
         console.log(err);
-        getUserInput();
+        askQuestion(resolve);
     });
+
+    function askQuestion(resolve) {
+        var question = actionQuestion;
+        for (i = min; i <= max; i++) {
+            question += "\n" + i + ")" + actions[i];
+        }
+        question += "\n";
+        rl.question(question, (action) => {
+            if (action >= min && action <= max) {
+                return resolve(action);
+            }
+            else {
+                console.log("Please choose an action ranged " + min + " - " + max + "\n");
+                askQuestion(resolve);
+            }
+        });
+    }
 }
 
 function getCredentials(question){
@@ -105,11 +121,15 @@ function getCredentials(question){
 
 async function sendMsg(socket, text){
     socket.write(text);
-
-    socket.on("data", (data) => {
-        if(data.includes(LOGOUT_MSG) && data.includes("OK")){
-            socket.end();
-        }
-        console.log( "----> server says: " + data);
-    });
 }
+
+socket.on("data", (data) => {
+    if(data.includes(LOGOUT_MSG) && data.includes("OK")){
+        socket.end();
+    }
+
+    if(data.includes(LOGIN_MSG) && data.includes("OK")){
+        isLoggedIn = true;
+    }
+    console.log( "----> server says: " + data);
+});

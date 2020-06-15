@@ -8,6 +8,7 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Optional;
 
 public class ClientManager implements Runnable{
     private Socket request;
@@ -52,25 +53,41 @@ public class ClientManager implements Runnable{
 
     private String parseRequest(String requestContent) {
         String msg = Constants.OK_MSG;
+
         if(requestContent.startsWith(Constants.CREATE_ACCOUNT_MSG)){
             try{
                 String credentials[] = requestContent.split("\\s+");
-                User user = new User();
-                user.setUsername(credentials[1]);
-                user.setPassword(credentials[2]);
-                user.setLoggedIn(false);
-
-                users.add(user);
-
-                msg = msg + ", created user: " + user.toString();
-                return msg;
+                if(UserManager.isUnique(credentials[1])){
+                    User user = new User(credentials[1], credentials[2], false);
+                    users.add(user);
+                    msg += ", created user: " + user.toString();
+                }else{
+                    msg = Constants.ERR_MSG + Constants.DUPLICATE_USER_MSG;
+                }
             }catch(Exception e){
-                return e.getMessage();
+                msg = Constants.ERR_MSG + e.getMessage();
             }
         }
 
+        if(requestContent.startsWith(Constants.LOGIN_MSG)){
+            try{
+                String credentials[] = requestContent.split("\\s+");
 
+                Optional<User> userOpt = UserManager.getUser(credentials[1]);
+                if(userOpt.isPresent()){
+                    User user = userOpt.get();
+                    user.setLoggedIn(true);
 
+                    msg += Constants.LOGIN_MSG + " " + credentials[1];
+                }else{
+                    msg = Constants.ERR_MSG + Constants.USER_NOT_FOUND_MSG + credentials[1];
+                }
+            }catch(Exception e){
+                msg = Constants.ERR_MSG + e.getMessage();
+            }
+        }
+
+        System.out.println(msg);
         return msg;
     }
 }
