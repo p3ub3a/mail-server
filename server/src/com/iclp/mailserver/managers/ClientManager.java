@@ -1,6 +1,8 @@
-package com.iclp.mailserver;
+package com.iclp.mailserver.managers;
 
+import com.iclp.mailserver.pojos.User;
 import com.iclp.mailserver.utils.Constants;
+import com.iclp.mailserver.utils.Monitor;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -11,12 +13,20 @@ import java.util.ArrayList;
 import java.util.Optional;
 
 public class ClientManager implements Runnable{
+    private int id;
+    private static int idCounter;
+    private static Object lock = new Object();
     private Socket request;
     private BufferedReader input;
     private PrintWriter output;
     private ArrayList<User> users = UserManager.getUsers();
 
+    private User activeUser;
+
     public ClientManager(Socket socket) throws IOException{
+        synchronized (lock){
+            id = idCounter++;
+        }
         this.request = socket;
         input = new BufferedReader(new InputStreamReader(request.getInputStream()));
         output = new PrintWriter(request.getOutputStream(), true);
@@ -25,8 +35,9 @@ public class ClientManager implements Runnable{
     @Override
     public void run() {
         try {
+            System.out.println("Server is accepting requests for client " + id);
             while(true){
-                output.println("waiting for request");
+//                output.println("waiting for request");
                 String requestContent =  input.readLine();
 
                 if(requestContent == null) {
@@ -45,6 +56,7 @@ public class ClientManager implements Runnable{
             try {
                 input.close();
                 output.close();
+                System.out.println("Client " + id + " disconnected");
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -76,9 +88,17 @@ public class ClientManager implements Runnable{
                 Optional<User> userOpt = UserManager.getUser(credentials[1]);
                 if(userOpt.isPresent()){
                     User user = userOpt.get();
-                    user.setLoggedIn(true);
 
-                    msg += Constants.LOGIN_MSG + " " + credentials[1];
+                    if(user.getPassword().equals(credentials[2])){
+                        forceLogout(user);
+
+                        createLogoutThread(user);
+
+                        msg += Constants.LOGIN_MSG + " " + credentials[1];
+                    }else{
+                        msg = Constants.ERR_MSG + Constants.INVALID_PASSWORD_MSG + user.getUsername();
+                    }
+
                 }else{
                     msg = Constants.ERR_MSG + Constants.USER_NOT_FOUND_MSG + credentials[1];
                 }
@@ -87,7 +107,33 @@ public class ClientManager implements Runnable{
             }
         }
 
+        if(requestContent.startsWith(Constants.LOGOUT_MSG)){
+            if(activeUser.isLoggedIn()){
+                activeUser.setLoggedIn(false);
+                msg += activeUser.getUsername() + " " + Constants.LOGOUT_MSG;
+            }else{
+                msg = Constants.ERR_MSG + Constants.USER_NOT_LOGGEDIN_MSG;
+            }
+        }
+
         System.out.println(msg);
         return msg;
+    }
+
+    private void forceLogout(User user) {
+        Optional<Monitor> optionalMonitor = LogoutManager.getMonitor(user.getUsername());
+
+        if(optionalMonitor.isPresent()){
+            Monitor.wakeupThread(optionalMonitor.get());
+            user.setLoggedIn(false);
+        }
+    }
+
+    private void createLogoutThread(User user) {
+        Runnable logoutManager = new LogoutManager(user.getUsername(), output);
+        Thread logoutManagerThread = new Thread(logoutManager);
+        logoutManagerThread.start();
+        user.setLoggedIn(true);
+        activeUser = user;
     }
 }

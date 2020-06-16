@@ -1,4 +1,4 @@
-package com.iclp.mailserver;
+package com.iclp.mailserver.pojos;
 
 public class User {
     private String username;

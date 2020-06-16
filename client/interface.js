@@ -25,39 +25,64 @@ var options = {
     host: "localhost"
 }
 
-start();
 var socket = new net.Socket();
 socket.connect(options);
 var isLoggedIn = false;
+var wasForcedLoggedOut = false;
 
-async function start(){
-    var input;
+start();
+
+function start(){
+    wasForcedLoggedOut = false;
+
     if(isLoggedIn){
-        input = await getUserInput(1, 6);
+        getUserInput(2, 6);
     }else{
-        input = await getUserInput(0, 1);
+        getUserInput(0, 1);
         console.log("ajungerwqhrq");
     }
-    
-    var msg = "";
+}
 
-    switch(input){
+function getUserInput(min, max){
+    var question = actionQuestion;
+    for (i = min; i <= max; i++) {
+        question += "\n" + i + ")" + actions[i];
+    }
+    question += "\n";
+    rl.question(question, (action) => {
+        if (action >= min && action <= max) {
+            if(wasForcedLoggedOut){
+                console.log("A different client logged in with this user, you have been logged out!");
+                start();
+            }else{
+                sendRequest(action); 
+            }
+            
+        }
+        else {
+            console.log("Please choose an action ranged " + min + " - " + max + "\n");
+            getUserInput(min, max);
+        }
+    });
+
+    rl.on("close", () => {
+
+    });
+}
+
+async function sendRequest(input) {
+    switch (input) {
         //create account
         case "0":
-            var credentials = await getCredentials(createAccountQuestion);
-            console.log(credentials);
-            sendMsg(socket, CREATE_ACCOUNT_MSG + " " + credentials + "\n");
+            getCredentials(createAccountQuestion, CREATE_ACCOUNT_MSG);
             break;
         // login username password
         case "1":
-            var credentials = await getCredentials(createAccountQuestion);
-            console.log(credentials);
-            sendMsg(socket, LOGIN_MSG + " " + credentials + "\n");
+            getCredentials(createAccountQuestion, LOGIN_MSG);
             break;
         // logout
         case "2":
-            isLoggedIn = false;
-            console.log(input);
+            sendMsg(socket, LOGOUT_MSG + "\n");
             break;
         // send users msg
         case "3":
@@ -78,44 +103,12 @@ async function start(){
         default:
             console.warn("\ninput not known\n");
     }
-
-    start();
 }
 
-function getUserInput(min, max){
-    return new Promise((resolve, reject) => {
-        askQuestion(resolve);
-    }).catch(err => {
-        console.log(err);
-        askQuestion(resolve);
-    });
-
-    function askQuestion(resolve) {
-        var question = actionQuestion;
-        for (i = min; i <= max; i++) {
-            question += "\n" + i + ")" + actions[i];
-        }
-        question += "\n";
-        rl.question(question, (action) => {
-            if (action >= min && action <= max) {
-                return resolve(action);
-            }
-            else {
-                console.log("Please choose an action ranged " + min + " - " + max + "\n");
-                askQuestion(resolve);
-            }
-        });
-    }
-}
-
-function getCredentials(question){
-    return new Promise((resolve, reject) => {
-        rl.question( question, (action) => {
-            return resolve(action);
-        });
-    }).catch(err => {
-        console.log(err);
-        getUserInput();
+function getCredentials(question, message){
+    rl.question( question, (credentials) => {
+        console.log(credentials);
+        sendMsg(socket, message + " " + credentials + "\n");
     });
 }
 
@@ -124,12 +117,22 @@ async function sendMsg(socket, text){
 }
 
 socket.on("data", (data) => {
+    console.log( "----> server says: " + data);
+
     if(data.includes(LOGOUT_MSG) && data.includes("OK")){
-        socket.end();
+        isLoggedIn = false;
+    }
+
+    if(data.includes(FORCE_LOGOUT_MSG)){
+        wasForcedLoggedOut = true;
+        isLoggedIn = false;
     }
 
     if(data.includes(LOGIN_MSG) && data.includes("OK")){
         isLoggedIn = true;
     }
-    console.log( "----> server says: " + data);
+
+    if(!wasForcedLoggedOut){
+        start();
+    }
 });

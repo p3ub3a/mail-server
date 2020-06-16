@@ -1,5 +1,7 @@
 package com.iclp.mailserver;
 
+import com.iclp.mailserver.managers.ClientManager;
+import com.iclp.mailserver.managers.NotificationManager;
 import com.iclp.mailserver.utils.Constants;
 
 import java.net.ServerSocket;
@@ -16,6 +18,8 @@ public class Runner {
         try{
             ServerSocket serverSocket = new ServerSocket(Constants.PORT);
 
+            startNotificationManager();
+
             while(true){
                 System.out.println("listening on port " + serverSocket.getLocalPort() + " ...");
                 Socket socket = serverSocket.accept();
@@ -30,5 +34,11 @@ public class Runner {
             System.out.println("something went wrong");
             e.printStackTrace();
         }
+    }
+
+    private static void startNotificationManager() {
+        Runnable notificationManager = new NotificationManager();
+        Thread notificationManagerThread = new Thread(notificationManager);
+        notificationManagerThread.start();
     }
 }

@@ -3,6 +3,7 @@ package com.iclp.mailserver.utils;
 public class Constants {
     public static final int PORT = 5432;
     public static final int SERVER_THREAD_NR = 5;
+    public static final int NOTIFICATION_DEALY = 1000;
 
     public static final String CREATE_ACCOUNT_MSG = "create_account";
     public static final String LOGIN_MSG = "login";
@@ -16,6 +17,8 @@ public class Constants {
 
     public static final String OK_MSG = "OK: ";
     public static final String ERR_MSG = "ERROR: ";
+    public static final String INVALID_PASSWORD_MSG = "Invalid password for user ";
     public static final String DUPLICATE_USER_MSG = "The username is taken";
     public static final String USER_NOT_FOUND_MSG = "Could not find user ";
+    public static final String USER_NOT_LOGGEDIN_MSG = "User is not logged in";
 }

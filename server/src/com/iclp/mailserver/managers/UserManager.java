@@ -1,4 +1,6 @@
-package com.iclp.mailserver;
+package com.iclp.mailserver.managers;
+
+import com.iclp.mailserver.pojos.User;
 
 import java.util.ArrayList;
 import java.util.Optional;
