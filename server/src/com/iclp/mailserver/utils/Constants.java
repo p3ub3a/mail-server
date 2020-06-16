@@ -15,8 +15,8 @@ public class Constants {
     public static final String FORCE_LOGOUT_MSG = "force_logout";
     public static final String NEW_MESSAGE_IN_MAILBOX_MSG = "new_message_in_mailbox";
 
-    public static final String OK_MSG = "OK: ";
-    public static final String ERR_MSG = "ERROR: ";
+    public static final String OK_MSG = "\u001B[32mOK:\u001B[0m ";
+    public static final String ERR_MSG = "\u001B[31mERROR:\u001B[0m ";
     public static final String INVALID_PASSWORD_MSG = "Invalid password for user ";
     public static final String DUPLICATE_USER_MSG = "The username is taken";
     public static final String USER_NOT_FOUND_MSG = "Could not find user ";

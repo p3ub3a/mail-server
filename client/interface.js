@@ -11,9 +11,11 @@ const EXIT_MSG = "exit";
 const FORCE_LOGOUT_MSG = "force_logout";
 const NEW_MESSAGE_IN_MAILBOX_MSG = "new_message_in_mailbox";
 
-const actionQuestion = "Please choose one action: ";
+const actionQuestion = "> Please choose one action: ";
 const actions = [CREATE_ACCOUNT_MSG, LOGIN_MSG, LOGOUT_MSG, SEND_MSG, READ_MAILBOX_MSG,READ_MESSAGE_MSG,EXIT_MSG];
 const createAccountQuestion = "Enter the desired username and password *username password*: ";
+const server_text = "\u001B[47m\u001B[30mserver:\u001B[0m ";
+const different_user_text = "\u001B[31mA different client logged in with this user name, you have been logged out!\u001B[0m";
 
 const rl = readline.createInterface({
     input: process.stdin,
@@ -39,20 +41,19 @@ function start(){
         getUserInput(2, 6);
     }else{
         getUserInput(0, 1);
-        console.log("ajungerwqhrq");
     }
 }
 
 function getUserInput(min, max){
     var question = actionQuestion;
     for (i = min; i <= max; i++) {
-        question += "\n" + i + ")" + actions[i];
+        question += "\n\u001B[33m" + i + ")\u001B[0m" + actions[i];
     }
     question += "\n";
     rl.question(question, (action) => {
         if (action >= min && action <= max) {
             if(wasForcedLoggedOut){
-                console.log("A different client logged in with this user, you have been logged out!");
+                console.log(different_user_text);
                 start();
             }else{
                 sendRequest(action); 
@@ -60,13 +61,9 @@ function getUserInput(min, max){
             
         }
         else {
-            console.log("Please choose an action ranged " + min + " - " + max + "\n");
+            console.log("Please choose an action ranged \u001B[33m" + min + " - " + max + "\u001B[0m\n");
             getUserInput(min, max);
         }
-    });
-
-    rl.on("close", () => {
-
     });
 }
 
@@ -117,7 +114,7 @@ async function sendMsg(socket, text){
 }
 
 socket.on("data", (data) => {
-    console.log( "----> server says: " + data);
+    console.log( server_text + data);
 
     if(data.includes(LOGOUT_MSG) && data.includes("OK")){
         isLoggedIn = false;
@@ -132,6 +129,7 @@ socket.on("data", (data) => {
         isLoggedIn = true;
     }
 
+    // start is called when the user types something -> see rl.question
     if(!wasForcedLoggedOut){
         start();
     }

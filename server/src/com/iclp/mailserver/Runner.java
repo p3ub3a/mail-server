@@ -21,9 +21,8 @@ public class Runner {
             startNotificationManager();
 
             while(true){
-                System.out.println("listening on port " + serverSocket.getLocalPort() + " ...");
+                System.out.println("listening on port \u001B[33m" + serverSocket.getLocalPort() + "\u001B[0m ...");
                 Socket socket = serverSocket.accept();
-                System.out.println("a client has connected!");
 
                 ClientManager client = new ClientManager(socket);
                 clients.add(client);

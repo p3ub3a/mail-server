@@ -20,7 +20,7 @@ public class NotificationManager implements Runnable{
     @Override
     public void run() {
 
-        System.out.println("Notification service started");
+        System.out.println("\u001B[32mNotification service started\u001B[0m");
 
         while(!isOffline){
             for(Notification n : notifications){

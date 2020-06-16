@@ -16,9 +16,11 @@ public class ClientManager implements Runnable{
     private int id;
     private static int idCounter;
     private static Object lock = new Object();
+
     private Socket request;
     private BufferedReader input;
     private PrintWriter output;
+
     private ArrayList<User> users = UserManager.getUsers();
 
     private User activeUser;
@@ -35,13 +37,13 @@ public class ClientManager implements Runnable{
     @Override
     public void run() {
         try {
-            System.out.println("Server is accepting requests for client " + id);
+            System.out.println("\u001B[33m Server is accepting requests for client " + id + " \u001B[0m");
             while(true){
 //                output.println("waiting for request");
                 String requestContent =  input.readLine();
 
                 if(requestContent == null) {
-                    output.println("request content is null");
+                    output.println("\u001B[31m request content is null \u001B[0m");
                     break;
                 }
 
@@ -56,7 +58,7 @@ public class ClientManager implements Runnable{
             try {
                 input.close();
                 output.close();
-                System.out.println("Client " + id + " disconnected");
+                System.out.println("\u001B[31m Client " + id + " disconnected \u001B[0m");
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -72,7 +74,7 @@ public class ClientManager implements Runnable{
                 if(UserManager.isUnique(credentials[1])){
                     User user = new User(credentials[1], credentials[2], false);
                     users.add(user);
-                    msg += ", created user: " + user.toString();
+                    msg += "created user: " + user.toString();
                 }else{
                     msg = Constants.ERR_MSG + Constants.DUPLICATE_USER_MSG;
                 }
