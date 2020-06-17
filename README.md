@@ -1,6 +1,6 @@
 ## Mail server
 
-###Server:
+### Server:
 
 Start *Runner.main*, it accepts max 5 client connections by default. If the limit is reached, other clients will have to wait for a slot to be open.
 
@@ -15,7 +15,7 @@ Start *Runner.main*, it accepts max 5 client connections by default. If the limi
 
 Each client interacts with a different server thread. If a client process exits, the server will free one thread and it should be ready for a new client connection.
 
-###Client:
+### Client:
 
 Simply run *interface.js*. Once a socket connection is established, the client will wait for messages from the server.
 
