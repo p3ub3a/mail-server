@@ -39,6 +39,39 @@ var isLoggedIn = false;
 var wasForcedLoggedOut = false;
 var newMailboxNotification = false;
 
+socket.on("data", (data) => {
+    console.log( serverText + data);
+    newMailboxNotification = false;
+
+    if(data.includes(LOGOUT_MSG) && data.includes("OK")){
+        isLoggedIn = false;
+    }
+
+    if(data.includes(FORCE_LOGOUT_MSG)){
+        wasForcedLoggedOut = true;
+        isLoggedIn = false;
+    }
+
+    if(data.includes(LOGIN_MSG) && data.includes("OK")){
+        isLoggedIn = true;
+    }
+
+    if(data.includes(NEW_MESSAGE_IN_MAILBOX_MSG)){
+        newMailboxNotification = true;
+    }
+
+    // start is called when the user types something -> see rl.question
+    if(!data.includes("connecting...") && !wasForcedLoggedOut && !newMailboxNotification){
+        start();
+    }
+});
+
+socket.on("error", (error) => {
+    console.log( serverErrorText + error.message );
+    console.log("exiting...");
+    process.exit();
+});
+
 function start(){
     wasForcedLoggedOut = false;
 
@@ -117,36 +150,3 @@ function sendInput(question, message){
 async function sendMsg(socket, text){
     socket.write(text);
 }
-
-socket.on("data", (data) => {
-    console.log( serverText + data);
-    newMailboxNotification = false;
-
-    if(data.includes(LOGOUT_MSG) && data.includes("OK")){
-        isLoggedIn = false;
-    }
-
-    if(data.includes(FORCE_LOGOUT_MSG)){
-        wasForcedLoggedOut = true;
-        isLoggedIn = false;
-    }
-
-    if(data.includes(LOGIN_MSG) && data.includes("OK")){
-        isLoggedIn = true;
-    }
-
-    if(data.includes(NEW_MESSAGE_IN_MAILBOX_MSG)){
-        newMailboxNotification = true;
-    }
-
-    // start is called when the user types something -> see rl.question
-    if(!data.includes("connecting...") && !wasForcedLoggedOut && !newMailboxNotification){
-        start();
-    }
-});
-
-socket.on("error", (error) => {
-    console.log( serverErrorText + error.message );
-    console.log("exiting...");
-    process.exit();
-});

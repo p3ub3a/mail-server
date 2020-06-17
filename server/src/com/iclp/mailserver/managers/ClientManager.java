@@ -134,7 +134,6 @@ public class ClientManager implements Runnable{
             }else{
                 msg = Constants.ERR_MSG + Constants.INVALID_CREDENTIALS_MSG;
             }
-
         }catch(Exception e){
             msg = Constants.ERR_MSG + Constants.INVALID_REQUEST_FORMAT_MSG;
         }
@@ -228,7 +227,10 @@ public class ClientManager implements Runnable{
     }
 
     private String readMailbox(String msg){
-        return msg + activeUser.getMailbox().keySet().toString();
+        if(activeUser != null){
+            return msg + activeUser.getMailbox().keySet().toString();
+        }
+        return Constants.ERR_MSG + Constants.USER_NOT_LOGGEDIN_MSG;
     }
 
     private String readMessage(String requestContent, String msg){
