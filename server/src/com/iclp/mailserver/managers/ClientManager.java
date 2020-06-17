@@ -177,6 +177,7 @@ public class ClientManager implements Runnable{
             synchronized (lock){
                 usernameOutputMap.get(user.getUsername()).println(Constants.FORCE_LOGOUT_MSG + " user " + user.getUsername());
                 usernameOutputMap.remove(user.getUsername());
+                System.out.println("\u001B[36m[" + Constants.SDF.format(new Date(System.currentTimeMillis())) + "]\u001B[0m " + "\u001B[33m[Client\u001B[0m\u001B[34m " + id + "\u001B[0m] " + "forced logged out " + user.getUsername());
             }
         }
     }
@@ -187,7 +188,7 @@ public class ClientManager implements Runnable{
             synchronized (lock){
                 usernameOutputMap.remove(activeUser.getUsername());
             }
-            msg += activeUser.getUsername() + " " + Constants.LOGOUT_MSG;
+            msg += Constants.LOGOUT_MSG + " " + activeUser.getUsername();
         }else{
             msg = Constants.ERR_MSG + Constants.USER_NOT_LOGGEDIN_MSG;
         }

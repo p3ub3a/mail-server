@@ -40,28 +40,29 @@ var wasForcedLoggedOut = false;
 var newMailboxNotification = false;
 
 socket.on("data", (data) => {
+    var text = data.toString().trim();
     console.log( serverText + data);
     newMailboxNotification = false;
 
-    if(data.includes(LOGOUT_MSG) && data.includes("OK")){
+    if(text.startsWith("\u001B[32mOK:\u001B[0m " + LOGOUT_MSG)){
         isLoggedIn = false;
     }
 
-    if(data.includes(FORCE_LOGOUT_MSG)){
+    if(text.startsWith(FORCE_LOGOUT_MSG)){
         wasForcedLoggedOut = true;
         isLoggedIn = false;
     }
 
-    if(data.includes(LOGIN_MSG) && data.includes("OK")){
+    if(text.startsWith("\u001B[32mOK:\u001B[0m " + LOGIN_MSG)){
         isLoggedIn = true;
     }
 
-    if(data.includes(NEW_MESSAGE_IN_MAILBOX_MSG)){
+    if(text.startsWith(NEW_MESSAGE_IN_MAILBOX_MSG)){
         newMailboxNotification = true;
     }
 
     // start is called when the user types something -> see rl.question
-    if(!data.includes("connecting...") && !wasForcedLoggedOut && !newMailboxNotification){
+    if(!text.startsWith("\u001B[33mconnecting...") && !wasForcedLoggedOut && !newMailboxNotification){
         start();
     }
 });
@@ -147,6 +148,6 @@ function sendInput(question, message){
     });
 }
 
-function sendMsg(socket, text){
+ function sendMsg(socket, text){
     socket.write(text);
 }
