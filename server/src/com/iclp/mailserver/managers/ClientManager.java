@@ -9,16 +9,14 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class ClientManager implements Runnable{
     private int id;
     private static int idCounter;
+    private static int clientsNr;
     private static Object lock = new Object();
 
     private Socket request;
@@ -37,6 +35,7 @@ public class ClientManager implements Runnable{
         this.request = socket;
         input = new BufferedReader(new InputStreamReader(request.getInputStream()));
         output = new PrintWriter(request.getOutputStream(), true);
+        output.println("\u001B[33mconnecting...\u001B[0m there are " + clientsNr + " other clients online (max capacity: \u001B[33m" + Constants.SERVER_THREAD_NR + "\u001B[0m)");
     }
 
     public static Map<String, PrintWriter> getUsernameOutputMap() {
@@ -49,8 +48,12 @@ public class ClientManager implements Runnable{
 
     @Override
     public void run() {
+        output.println("\u001B[32myou are connected\u001B[0m");
         try {
-            System.out.println("\u001B[33m Server is accepting requests for client " + id + " \u001B[0m");
+            synchronized (lock){
+                clientsNr++;
+            }
+            System.out.println("\u001B[36m[" + Constants.SDF.format(new Date(System.currentTimeMillis())) + "]\u001B[0m " + "\u001B[33m Server is accepting requests for client " + id + " \u001B[0m");
             while(true){
                 String requestContent =  input.readLine();
 
@@ -70,7 +73,10 @@ public class ClientManager implements Runnable{
             try {
                 input.close();
                 output.close();
-                System.out.println("\u001B[31m Client " + id + " disconnected \u001B[0m");
+                synchronized (lock){
+                    clientsNr--;
+                }
+                System.out.println("\u001B[36m[" + Constants.SDF.format(new Date(System.currentTimeMillis())) + "]\u001B[0m " + "\u001B[31m Client " + id + " disconnected \u001B[0m");
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -104,21 +110,31 @@ public class ClientManager implements Runnable{
             msg = readMessage(requestContent, msg);
         }
 
-        System.out.println(msg);
+        System.out.println("\u001B[36m[" + Constants.SDF.format(new Date(System.currentTimeMillis())) + "]\u001B[0m " + "\u001B[33m[Client\u001B[0m\u001B[34m " + id + "\u001B[0m] " + msg);
         return msg;
     }
 
     private String createAccount(String requestContent, String msg) {
         try{
             String credentials[] = requestContent.split(Constants.WHITE_SPACE_REGEX);
-            if(UserManager.isUnique(credentials[1])){
-                User user = new User(credentials[1], credentials[2], false);
-                users.add(user);
 
-                msg += "created user: " + user.toString();
+            Pattern pattern = Pattern.compile(Constants.CREDENTIALS_REGEX);
+            Matcher userMatcher = pattern.matcher(credentials[1]);
+            Matcher passwordMatcher = pattern.matcher(credentials[2]);
+
+            if(userMatcher.matches() && passwordMatcher.matches()){
+                if(UserManager.isUnique(credentials[1])){
+                    User user = new User(credentials[1], credentials[2], false);
+                    users.add(user);
+
+                    msg += "created user: " + user.toString();
+                }else{
+                    msg = Constants.ERR_MSG + Constants.DUPLICATE_USER_MSG;
+                }
             }else{
-                msg = Constants.ERR_MSG + Constants.DUPLICATE_USER_MSG;
+                msg = Constants.ERR_MSG + Constants.INVALID_CREDENTIALS_MSG;
             }
+
         }catch(Exception e){
             msg = Constants.ERR_MSG + Constants.INVALID_REQUEST_FORMAT_MSG;
         }

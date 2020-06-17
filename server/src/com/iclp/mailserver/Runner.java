@@ -6,6 +6,7 @@ import com.iclp.mailserver.utils.Constants;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -18,7 +19,7 @@ public class Runner {
             ServerSocket serverSocket = new ServerSocket(Constants.PORT);
 
             while(true){
-                System.out.println("listening on port \u001B[33m" + serverSocket.getLocalPort() + "\u001B[0m ...");
+                System.out.println("\u001B[36m[" + Constants.SDF.format(new Date(System.currentTimeMillis())) + "]\u001B[0m " + "listening on port \u001B[33m" + serverSocket.getLocalPort() + "\u001B[0m ...");
                 Socket socket = serverSocket.accept();
 
                 ClientManager client = new ClientManager(socket);
@@ -27,7 +28,7 @@ public class Runner {
                 clientThreadPool.execute(client);
             }
         }catch(Exception e) {
-            System.out.println("something went wrong");
+            System.out.println("\u001B[36m[" + Constants.SDF.format(new Date(System.currentTimeMillis())) + "]\u001B[0m " + "something went wrong");
             e.printStackTrace();
         }
     }

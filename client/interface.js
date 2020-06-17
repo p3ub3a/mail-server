@@ -16,11 +16,11 @@ const actions = [CREATE_ACCOUNT_MSG, LOGIN_MSG, LOGOUT_MSG, SEND_MSG, READ_MAILB
 const actionQuestion = "> Please choose one action: ";
 const createAccountQuestion = "New account credentials *username password*: ";
 const loginQuestion = "Login credentials *username password*: ";
-const sendMessageQuestion = "Send a message to other users *user1 user2 user3... message*: ";
+const sendMessageQuestion = "Send a message to other users *user1 user2 user3... \"message\"*: ";
 const readMessageQuestion = "Read a message by giving the message id *id*: ";
 const serverText = "\u001B[47m\u001B[30mserver:\u001B[0m ";
 const differentUserText = "\u001B[31mA different client logged in with this user name, you have been logged out!\u001B[0m";
-const serverErrorText="\u001B[31mThe server encountered an error: \u001B[0m";\
+const serverErrorText="\u001B[31mThe server encountered an error: \u001B[0m";
 const bye = "Thank you for using the service";
 
 const rl = readline.createInterface({
@@ -38,8 +38,6 @@ socket.connect(options);
 var isLoggedIn = false;
 var wasForcedLoggedOut = false;
 var newMailboxNotification = false;
-
-start();
 
 function start(){
     wasForcedLoggedOut = false;
@@ -142,7 +140,7 @@ socket.on("data", (data) => {
     }
 
     // start is called when the user types something -> see rl.question
-    if(!wasForcedLoggedOut && !newMailboxNotification){
+    if(!data.includes("connecting...") && !wasForcedLoggedOut && !newMailboxNotification){
         start();
     }
 });
