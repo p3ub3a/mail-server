@@ -27,6 +27,7 @@ public class Constants {
     public static final String INVALID_CREDENTIALS_MSG = "Bad format for username and/or password ";
     public static final String DUPLICATE_USER_MSG = "The username is taken";
     public static final String USER_NOT_FOUND_MSG = "Could not find user ";
+    public static final String MESSAGE_NOT_FOUND_MSG = "Could not find message ";
     public static final String USER_NOT_LOGGEDIN_MSG = "User is not logged in";
     public static final String INVALID_REQUEST_FORMAT_MSG = "Invalid request format";
     public static final String SEND_MESSAGE_TO_SAME_USER_MSG = "You can't send message to yourself";

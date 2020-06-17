@@ -221,8 +221,6 @@ public class ClientManager implements Runnable{
         }else{
             msg = Constants.ERR_MSG + Constants.INVALID_REQUEST_FORMAT_MSG;
         }
-
-
         return msg;
     }
 
@@ -241,11 +239,12 @@ public class ClientManager implements Runnable{
 
             if(message != null){
                 msg += "\u001B[33mfrom:\u001B[0m " + message.getFrom() + " \u001B[33mtext:\u001B[0m " + message.getMessage();
+            }else{
+                msg = Constants.ERR_MSG + Constants.MESSAGE_NOT_FOUND_MSG + splitRequest[1];
             }
         }catch (Exception e){
             msg = Constants.ERR_MSG + Constants.INVALID_REQUEST_FORMAT_MSG;
         }
-
         return msg;
     }
 }

@@ -105,7 +105,7 @@ function selectOption(min, max){
     });
 }
 
-async function sendRequest(input) {
+function sendRequest(input) {
     switch (input) {
         //create account
         case "0":
@@ -147,6 +147,6 @@ function sendInput(question, message){
     });
 }
 
-async function sendMsg(socket, text){
+function sendMsg(socket, text){
     socket.write(text);
 }
