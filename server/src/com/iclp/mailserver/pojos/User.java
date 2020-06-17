@@ -1,9 +1,13 @@
 package com.iclp.mailserver.pojos;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class User {
     private String username;
     private String password;
     private boolean isLoggedIn;
+    private Map<Integer, Message> mailbox = new HashMap<>();
 
     public User(String username, String password, boolean isLoggedIn) {
         this.username = username;
@@ -25,6 +29,10 @@ public class User {
 
     public void setLoggedIn(boolean loggedIn) {
         isLoggedIn = loggedIn;
+    }
+
+    public Map<Integer, Message> getMailbox() {
+        return mailbox;
     }
 
     @Override

@@ -11,11 +11,17 @@ const EXIT_MSG = "exit";
 const FORCE_LOGOUT_MSG = "force_logout";
 const NEW_MESSAGE_IN_MAILBOX_MSG = "new_message_in_mailbox";
 
-const actionQuestion = "> Please choose one action: ";
 const actions = [CREATE_ACCOUNT_MSG, LOGIN_MSG, LOGOUT_MSG, SEND_MSG, READ_MAILBOX_MSG,READ_MESSAGE_MSG,EXIT_MSG];
-const createAccountQuestion = "Enter the desired username and password *username password*: ";
-const server_text = "\u001B[47m\u001B[30mserver:\u001B[0m ";
-const different_user_text = "\u001B[31mA different client logged in with this user name, you have been logged out!\u001B[0m";
+
+const actionQuestion = "> Please choose one action: ";
+const createAccountQuestion = "New account credentials *username password*: ";
+const loginQuestion = "Login credentials *username password*: ";
+const sendMessageQuestion = "Send a message to other users *user1 user2 user3... message*: ";
+const readMessageQuestion = "Read a message by giving the message id *id*: ";
+const serverText = "\u001B[47m\u001B[30mserver:\u001B[0m ";
+const differentUserText = "\u001B[31mA different client logged in with this user name, you have been logged out!\u001B[0m";
+const serverErrorText="\u001B[31mThe server encountered an error: \u001B[0m";\
+const bye = "Thank you for using the service";
 
 const rl = readline.createInterface({
     input: process.stdin,
@@ -31,6 +37,7 @@ var socket = new net.Socket();
 socket.connect(options);
 var isLoggedIn = false;
 var wasForcedLoggedOut = false;
+var newMailboxNotification = false;
 
 start();
 
@@ -38,13 +45,13 @@ function start(){
     wasForcedLoggedOut = false;
 
     if(isLoggedIn){
-        getUserInput(2, 6);
+        selectOption(2, 6);
     }else{
-        getUserInput(0, 1);
+        selectOption(0, 1);
     }
 }
 
-function getUserInput(min, max){
+function selectOption(min, max){
     var question = actionQuestion;
     for (i = min; i <= max; i++) {
         question += "\n\u001B[33m" + i + ")\u001B[0m" + actions[i];
@@ -53,7 +60,7 @@ function getUserInput(min, max){
     rl.question(question, (action) => {
         if (action >= min && action <= max) {
             if(wasForcedLoggedOut){
-                console.log(different_user_text);
+                console.log(differentUserText);
                 start();
             }else{
                 sendRequest(action); 
@@ -62,7 +69,7 @@ function getUserInput(min, max){
         }
         else {
             console.log("Please choose an action ranged \u001B[33m" + min + " - " + max + "\u001B[0m\n");
-            getUserInput(min, max);
+            selectOption(min, max);
         }
     });
 }
@@ -71,11 +78,11 @@ async function sendRequest(input) {
     switch (input) {
         //create account
         case "0":
-            getCredentials(createAccountQuestion, CREATE_ACCOUNT_MSG);
+            sendInput(createAccountQuestion, CREATE_ACCOUNT_MSG);
             break;
         // login username password
         case "1":
-            getCredentials(createAccountQuestion, LOGIN_MSG);
+            sendInput(loginQuestion, LOGIN_MSG);
             break;
         // logout
         case "2":
@@ -83,29 +90,29 @@ async function sendRequest(input) {
             break;
         // send users msg
         case "3":
-            console.log(input);
+            sendInput(sendMessageQuestion, SEND_MSG);
             break;
         // read mailbox
         case "4":
-            console.log(input);
+            sendMsg(socket, READ_MAILBOX_MSG + "\n");
             break;
         // read message id
         case "5":
-            console.log(input);
+            sendInput(readMessageQuestion, READ_MESSAGE_MSG);
             break;
         // exit
         case "6":
-            console.log(input);
+            console.log(bye);
             process.exit();
         default:
             console.warn("\ninput not known\n");
     }
 }
 
-function getCredentials(question, message){
-    rl.question( question, (credentials) => {
-        console.log(credentials);
-        sendMsg(socket, message + " " + credentials + "\n");
+function sendInput(question, message){
+    rl.question( question, (input) => {
+        // console.log(input);
+        sendMsg(socket, message + " " + input + "\n");
     });
 }
 
@@ -114,7 +121,8 @@ async function sendMsg(socket, text){
 }
 
 socket.on("data", (data) => {
-    console.log( server_text + data);
+    console.log( serverText + data);
+    newMailboxNotification = false;
 
     if(data.includes(LOGOUT_MSG) && data.includes("OK")){
         isLoggedIn = false;
@@ -129,8 +137,18 @@ socket.on("data", (data) => {
         isLoggedIn = true;
     }
 
+    if(data.includes(NEW_MESSAGE_IN_MAILBOX_MSG)){
+        newMailboxNotification = true;
+    }
+
     // start is called when the user types something -> see rl.question
-    if(!wasForcedLoggedOut){
+    if(!wasForcedLoggedOut && !newMailboxNotification){
         start();
     }
+});
+
+socket.on("error", (error) => {
+    console.log( serverErrorText + error.message );
+    console.log("exiting...");
+    process.exit();
 });

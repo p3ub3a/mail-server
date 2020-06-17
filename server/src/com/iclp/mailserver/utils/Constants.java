@@ -4,6 +4,10 @@ public class Constants {
     public static final int PORT = 5432;
     public static final int SERVER_THREAD_NR = 5;
     public static final int NOTIFICATION_DEALY = 1000;
+    public static final int MAX_ID_NR = 1000000;
+
+    public static final String WHITE_SPACE_REGEX = "\\s+";
+    public static final String MESSAGE_REGEX = "(.*?)\"((?:\\\\.|[^\"\\\\])*)\"";
 
     public static final String CREATE_ACCOUNT_MSG = "create_account";
     public static final String LOGIN_MSG = "login";
@@ -21,4 +25,6 @@ public class Constants {
     public static final String DUPLICATE_USER_MSG = "The username is taken";
     public static final String USER_NOT_FOUND_MSG = "Could not find user ";
     public static final String USER_NOT_LOGGEDIN_MSG = "User is not logged in";
+    public static final String INVALID_REQUEST_FORMAT_MSG = "Invalid request format";
+    public static final String SEND_MESSAGE_TO_SAME_USER_MSG = "You can't send message to yourself";
 }
